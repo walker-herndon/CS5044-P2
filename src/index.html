@@ -132,7 +132,7 @@
                     .attr('y', 40)
                     .attr('text-anchor', 'middle')
                     .attr('font-size', '20px')
-                    .text('MBTI Personality Distribution');
+                    .text('Movie Character MBTI Personality Distribution');
 
                 // Create x-axis label
                 svg.append('text')
@@ -145,11 +145,152 @@
                 // Create y-axis label
                 svg.append('text')
                     .attr('transform', 'rotate(-90)')
-                    .attr('x', -height / 2)
-                    .attr('y', margin - 20)
+                    .attr('x', -height / 2 - 50)
+                    .attr('y', margin - 40)
                     .attr('text-anchor', 'middle')
                     .attr('font-size', '16px')
                     .text('Count');
+
+                // Stacked bar chart of mbti distribution by decade
+                let mbti_by_decade = {};
+
+                // loop through data and count mbti by decade
+                data.forEach(function (d) {
+                    // need to convert year to decade
+                    let decade = Math.floor(d.year / 10) * 10;
+                    if (mbti_by_decade[decade] === undefined) {
+                        mbti_by_decade[decade] = {
+                            'INTJ': 0,
+                            'INTP': 0,
+                            'ENTJ': 0,
+                            'ENTP': 0,
+                            'INFJ': 0,
+                            'INFP': 0,
+                            'ENFJ': 0,
+                            'ENFP': 0,
+                            'ISTJ': 0,
+                            'ISFJ': 0,
+                            'ESTJ': 0,
+                            'ESFJ': 0,
+                            'ISTP': 0,
+                            'ISFP': 0,
+                            'ESTP': 0,
+                            'ESFP': 0
+                        };
+                    }
+                    mbti_by_decade[decade][d.mbti] += 1;
+                });
+
+                let mbti_by_decade_percent = {};
+
+                // loop through mbti_by_decade and calculate percentage
+                Object.keys(mbti_by_decade).forEach(function (decade) {
+                    mbti_by_decade_percent[decade] = {};
+                    Object.keys(mbti_by_decade[decade]).forEach(function (mbti) {
+                        mbti_by_decade_percent[decade][mbti] = mbti_by_decade[decade][mbti] / d3.sum(Object.values(mbti_by_decade[decade]));
+                    });
+                });
+
+                console.log(mbti_by_decade);
+
+                // Create a stacked bar chart of MBTI personalities by decade
+                const svg2 = d3.select('body').append('svg')
+                    .attr('width', 1000)
+                    .attr('height', 700);
+
+                const margin2 = 60;
+                const width2 = 1000 - 2 * margin2;
+                const height2 = 600 - 2 * margin2;
+
+                const chart2 = svg2.append('g')
+                    .attr('transform', `translate(${margin2}, ${margin2})`);
+
+                const xScale2 = d3.scaleBand()
+                    .range([0, width2])
+                    .domain(Object.keys(mbti_by_decade_percent))
+                    .padding(0.3);
+
+                const yScale2 = d3.scaleLinear()
+                    .range([height2, 0])
+                    .domain([0, d3.max(Object.values(mbti_by_decade_percent).map(d => d3.sum(Object.values(d))))]);
+
+                const colors = d3.scaleOrdinal()
+                    .domain(Object.keys(mbtiCount))
+                    .range(d3.schemeSet2);
+
+                const stack = d3.stack()
+                    .keys(Object.keys(mbtiCount));
+
+                const stackedData = stack(Object.values(mbti_by_decade_percent));
+
+                // Create x-axis
+                chart2.append('g')
+                    .attr('transform', `translate(0, ${height2})`)
+                    .call(d3.axisBottom(xScale2));
+
+                // Create y-axis
+                chart2.append('g')
+                    .call(d3.axisLeft(yScale2));
+
+                // Create bars
+                chart2.selectAll()
+                    .data(stackedData)
+                    .enter()
+                    .append('g')
+                    .attr('fill', d => colors(d.key))
+                    .selectAll('rect')
+                    .data(d => d)
+                    .enter()
+                    .append('rect')
+                    .attr('x', (d, i) => xScale2(Object.keys(mbti_by_decade_percent)[i]))
+                    .attr('y', d => yScale2(d[1]))
+                    .attr('height', d => yScale2(d[0]) - yScale2(d[1]))
+                    .attr('width', xScale2.bandwidth());
+
+                // Create title
+                svg2.append('text')
+                    .attr('x', width2 / 2 + margin2)
+                    .attr('y', 40)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '20px')
+                    .text('Movie Character MBTI Personality Distribution by Decade');
+
+                // Create x-axis label
+                svg2.append('text')
+                    .attr('x', width2 / 2 + margin2)
+                    .attr('y', height2 + 2 * margin2)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '16px')
+                    .text('Decade');
+
+                // Create y-axis label
+                svg2.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height2 / 2 - 50)
+                    .attr('y', margin2 - 40)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '16px')
+                    .text('Count');
+
+                // Create legend
+                const legend = svg2.append('g')
+                    .attr('transform', `translate(${width2 + 30}, 10)`)
+                    .selectAll()
+                    .data(Object.keys(mbtiCount))
+                    .enter()
+                    .append('g')
+                    .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+
+                legend.append('rect')
+                    .attr('width', 10)
+                    .attr('height', 10)
+                    .attr('fill', d => colors(d));
+
+                legend.append('text')
+                    .text(d => d)
+                    .attr('x', 15)
+                    .attr('y', 10)
+                    .attr('font-size', '12px');
             });
         </script>
 
