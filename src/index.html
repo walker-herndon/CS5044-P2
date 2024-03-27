@@ -5,24 +5,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://d3js.org/d3.v7.min.js"></script>
+        <link rel="stylesheet" href="styles.css">
         <title>CS5044 P2</title>
     </head>
 
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 20%;
-        }
-
-        td {
-            border: 1px solid black;
-            text-align: center;
-            padding: 8px;
-        }
-    </style>
-
     <body>
         <!-- 4x4 Table of MBTI Personalities -->
+        <!-- Note: order is not final, unsure of correct organization -->
         <table>
             <tr>
                 <td>INTJ</td>
@@ -49,6 +38,40 @@
                 <td>ESFP</td>
             </tr>
         </table>
+
+        <script>
+            // Calculate distribution of MBTI personalities in data/merged.csv
+            d3.csv('../data/merged.csv').then(function (data) {
+                // Initialize count of each MBTI personality
+                let mbtiCount = {
+                    'INTJ': 0,
+                    'INTP': 0,
+                    'ENTJ': 0,
+                    'ENTP': 0,
+                    'INFJ': 0,
+                    'INFP': 0,
+                    'ENFJ': 0,
+                    'ENFP': 0,
+                    'ISTJ': 0,
+                    'ISFJ': 0,
+                    'ESTJ': 0,
+                    'ESFJ': 0,
+                    'ISTP': 0,
+                    'ISFP': 0,
+                    'ESTP': 0,
+                    'ESFP': 0
+                };
+
+                // Count each MBTI personality
+                data.forEach(function (d) {
+                    mbtiCount[d.mbti] += 1;
+                });
+
+                // Display count of each MBTI personality
+                console.log(mbtiCount);
+            });
+        </script>
+
     </body>
 
 </html>
