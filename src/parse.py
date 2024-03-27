@@ -1,6 +1,7 @@
 # import numpy as np
 import re
 import pandas as pd
+import os
 
 movies_df = pd.read_csv('data/movies.csv')
 mbti_df = pd.read_csv('data/mbti.csv')
@@ -24,6 +25,10 @@ print(len(merged_df))
 # remove the movies that didn't find a match
 merged_df = merged_df[merged_df['name'].notnull()]
 merged_df = merged_df.drop(columns=['name'])
+
+# write back to csv
+if 'merged.csv' not in os.listdir('data'):
+    merged_df.to_csv('data/merged.csv', index=False)
 
 print(len(merged_df))
 print(merged_df.head(10))
